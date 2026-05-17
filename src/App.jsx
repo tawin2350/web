@@ -1028,7 +1028,7 @@ export default function App() {
                 <p>ทุกการสนับสนุนจะช่วยเพิ่ม character ใหม่ effect ใหม่ และ story mode ที่ลึกขึ้นอีก</p>
               </div>
               {/* เปลี่ยน src ด้านล่างเป็นรูป QR Code PromptPay ของคุณ */}
-              <img src="https://placehold.co/360x360/png?text=PromptPay+QR" alt="PromptPay QR placeholder" />
+              <img src="https://cdn.discordapp.com/attachments/1453651445701279878/1505629395715620994/IMG_5664.jpg?ex=6a0b5225&is=6a0a00a5&hm=482a9a011fdb87d8c18910499db44c3f0a1c273b02c0b302feadaa15e92684a7&" alt="PromptPay QR placeholder" />
             </div>
           </aside>
           </motion.section>
