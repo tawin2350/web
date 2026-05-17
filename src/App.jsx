@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronRight, faDownload, faMoon, faPlay, faRotateRight, faStar, faSun, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faChevronRight, faDownload, faMoon, faPlay, faRotateRight, faStar, faSun, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons';
 
 const scoreLetters = ['E', 'I', 'S', 'N', 'T', 'F', 'J', 'P'];
 const axisPairs = [
@@ -231,23 +232,104 @@ const mbtiProfiles = {
 };
 
 const mbtiStories = {
-  INTJ: { vibe: 'คิดเป็นระบบ มองเกมยาว และไม่ค่อยเสียเวลาให้สิ่งที่ไม่มีเหตุผลชัดเจน', friction: 'มักเหนื่อยกับคนที่เปลี่ยนใจบ่อย ดราม่าเก่ง หรือไม่เคารพแผนที่ตกลงกันไว้', matches: ['ENFP', 'ENTP'] },
-  INTP: { vibe: 'ชอบสำรวจไอเดียลึกๆ มีโลกความคิดของตัวเอง และซื่อสัตย์กับความจริงมากกว่าความนิยม', friction: 'ไม่ค่อยถูกกับคนที่เร่งให้สรุปเร็วเกินไป หรือไม่เปิดพื้นที่ให้ตั้งคำถาม', matches: ['ENTJ', 'ENFJ'] },
-  ENTJ: { vibe: 'ชัดเจน เด็ดขาด เห็นเป้าหมายไว และมีพลังในการพาคนรอบตัวเดินหน้า', friction: 'อาจชนกับคนที่ไม่รับผิดชอบ เลี่ยงการตัดสินใจ หรือวนอยู่กับปัญหาเดิมนานๆ', matches: ['INTP', 'INFP'] },
-  ENTP: { vibe: 'หัวไว สนุกกับการท้าทายกรอบเดิม และเปลี่ยนบทสนทนาธรรมดาให้มีประกายได้เสมอ', friction: 'มักไม่ถูกกับคนที่ปิดกั้นไอเดียเร็วเกินไป หรือยึดกฎจนไม่มีพื้นที่ทดลอง', matches: ['INFJ', 'INTJ'] },
-  INFJ: { vibe: 'ลึกซึ้ง อ่อนโยน มีสัญชาตญาณกับผู้คน และต้องการความสัมพันธ์ที่มีความหมายจริง', friction: 'เหนื่อยกับคนที่ไม่จริงใจ พูดอย่างทำอย่าง หรือมองข้ามความรู้สึกละเอียดอ่อน', matches: ['ENTP', 'ENFP'] },
-  INFP: { vibe: 'จริงใจกับคุณค่าข้างใน จินตนาการสูง และมักเข้าใจอารมณ์ที่คนอื่นอธิบายไม่ออก', friction: 'ไม่ค่อยถูกกับคนที่เย็นชาจนไม่ฟังใจ หรือบังคับให้ทิ้งตัวตนเพื่อเข้ากรอบ', matches: ['ENFJ', 'ENTJ'] },
-  ENFJ: { vibe: 'อบอุ่น อ่านบรรยากาศเก่ง และมีพรสวรรค์ในการทำให้คนอื่นรู้สึกมีคุณค่า', friction: 'มักเหนื่อยกับคนที่ปิดใจ ไม่สื่อสาร หรือรับพลังดูแลไปโดยไม่เห็นคุณค่า', matches: ['INFP', 'INTP'] },
-  ENFP: { vibe: 'สดใส ช่างเชื่อมโยง รักความเป็นไปได้ และมักพาคนรอบตัวเห็นโลกมุมใหม่', friction: 'ไม่ถูกกับคนที่ควบคุมมากเกินไป หรือทำให้ทุกไอเดียกลายเป็นข้อจำกัดทันที', matches: ['INTJ', 'INFJ'] },
-  ISTJ: { vibe: 'มั่นคง รับผิดชอบสูง เชื่อถือได้ และใส่ใจรายละเอียดที่ทำให้งานออกมาดีจริง', friction: 'อาจไม่ถูกกับคนที่รับปากง่ายแต่ไม่ทำ หรือเปลี่ยนแผนโดยไม่มีเหตุผล', matches: ['ESFP', 'ESTP'] },
-  ISFJ: { vibe: 'ใส่ใจ อ่อนโยน จำรายละเอียดของคนสำคัญได้ดี และดูแลความสัมพันธ์อย่างสม่ำเสมอ', friction: 'เหนื่อยกับคนที่พูดแรงเกินจำเป็น เห็นแก่ตัว หรือไม่เคารพความตั้งใจเล็กๆ', matches: ['ESFP', 'ESTP'] },
-  ESTJ: { vibe: 'จัดการเก่ง ตรงไปตรงมา รักความชัดเจน และเปลี่ยนแผนให้เป็นผลลัพธ์ได้จริง', friction: 'มักชนกับคนที่ไม่ตรงเวลา ไม่รับผิดชอบ หรือปล่อยให้เรื่องง่ายกลายเป็นเรื่องวุ่น', matches: ['ISFP', 'ISTP'] },
-  ESFJ: { vibe: 'เป็นศูนย์กลางความอบอุ่นของกลุ่ม ใส่ใจผู้คน และทำให้ทุกคนรู้สึกเป็นส่วนหนึ่ง', friction: 'ไม่ค่อยถูกกับคนที่ไม่รักษาน้ำใจ เมินความพยายาม หรือทำตัวห่างเหินเกินไป', matches: ['ISFP', 'ISTP'] },
-  ISTP: { vibe: 'ใจนิ่ง ลุยเป็นจังหวะ แก้ปัญหาด้วยมือจริง และชอบอิสระในการเลือกวิธีของตัวเอง', friction: 'อาจอึดอัดกับคนที่ถามความรู้สึกถี่เกินไป หรือจัดตารางชีวิตให้แน่นเกินจำเป็น', matches: ['ESFJ', 'ESTJ'] },
-  ISFP: { vibe: 'มีรสนิยม อ่อนโยน รักอิสระ และแสดงตัวตนผ่านการกระทำมากกว่าคำพูดเยอะๆ', friction: 'ไม่ถูกกับคนที่วิจารณ์แรง ควบคุมทุกอย่าง หรือไม่ให้พื้นที่กับความรู้สึกส่วนตัว', matches: ['ENFJ', 'ESFJ'] },
-  ESTP: { vibe: 'อ่านสถานการณ์ไว กล้าลอง กล้าตัดสินใจ และมีพลังกับสิ่งที่เกิดขึ้นตรงหน้า', friction: 'ไม่ค่อยถูกกับคนที่คิดวนมากเกินไป หรือทำให้ทุกอย่างช้าด้วยความกังวล', matches: ['ISFJ', 'ISTJ'] },
-  ESFP: { vibe: 'มีชีวิตชีวา อยู่กับปัจจุบันเก่ง และเติมสีสันให้พื้นที่รอบตัวแบบเป็นธรรมชาติ', friction: 'มักเหนื่อยกับคนที่จริงจังตลอดเวลา วิจารณ์บ่อย หรือไม่ยอมสนุกกับจังหวะตรงหน้า', matches: ['ISFJ', 'ISTJ'] },
+  INTJ: {
+    vibe: 'คิดเป็นระบบ มองเกมยาว และไม่ค่อยเสียเวลาให้สิ่งที่ไม่มีเหตุผลชัดเจน',
+    friction: 'มักเหนื่อยกับคนที่เปลี่ยนใจบ่อย ดราม่าเก่ง หรือไม่เคารพแผนที่ตกลงกันไว้',
+    matches: ['ENFP', 'ENTP'],
+    finalLine: 'เธอไม่ได้เย็นชา... แค่ไม่ชอบเสียพลังให้คนที่ไม่จริงจังพอจะเข้าใจเธอ',
+  },
+  INTP: {
+    vibe: 'ชอบสำรวจไอเดียลึกๆ มีโลกความคิดของตัวเอง และซื่อสัตย์กับความจริงมากกว่าความนิยม',
+    friction: 'ไม่ค่อยถูกกับคนที่เร่งให้สรุปเร็วเกินไป หรือไม่เปิดพื้นที่ให้ตั้งคำถาม',
+    matches: ['ENTJ', 'ENFJ'],
+    finalLine: 'เธอไม่ได้แปลก เธอแค่คิดลึกเกินกว่าคนทั่วไปจะตามทันในรอบแรก',
+  },
+  ENTJ: {
+    vibe: 'ชัดเจน เด็ดขาด เห็นเป้าหมายไว และมีพลังในการพาคนรอบตัวเดินหน้า',
+    friction: 'อาจชนกับคนที่ไม่รับผิดชอบ เลี่ยงการตัดสินใจ หรือวนอยู่กับปัญหาเดิมนานๆ',
+    matches: ['INTP', 'INFP'],
+    finalLine: 'เธอดูแรงในสายตาบางคน เพราะเธอไม่ชอบเสียเวลากับสิ่งที่ไม่พาไปข้างหน้า',
+  },
+  ENTP: {
+    vibe: 'หัวไว สนุกกับการท้าทายกรอบเดิม และเปลี่ยนบทสนทนาธรรมดาให้มีประกายได้เสมอ',
+    friction: 'มักไม่ถูกกับคนที่ปิดกั้นไอเดียเร็วเกินไป หรือยึดกฎจนไม่มีพื้นที่ทดลอง',
+    matches: ['INFJ', 'INTJ'],
+    finalLine: 'เธอไม่ได้เถียงเพื่อชนะเสมอไป บางทีเธอแค่อยากเห็นว่าไอเดียมันไปได้ไกลแค่ไหน',
+  },
+  INFJ: {
+    vibe: 'ลึกซึ้ง อ่อนโยน มีสัญชาตญาณกับผู้คน และต้องการความสัมพันธ์ที่มีความหมายจริง',
+    friction: 'เหนื่อยกับคนที่ไม่จริงใจ พูดอย่างทำอย่าง หรือมองข้ามความรู้สึกละเอียดอ่อน',
+    matches: ['ENTP', 'ENFP'],
+    finalLine: 'เธอมักเข้าใจคนอื่นเร็วมาก แต่กลับใช้เวลานานกว่าจะยอมให้ใครเข้าใจตัวเองจริงๆ',
+  },
+  INFP: {
+    vibe: 'จริงใจกับคุณค่าข้างใน จินตนาการสูง และมักเข้าใจอารมณ์ที่คนอื่นอธิบายไม่ออก',
+    friction: 'ไม่ค่อยถูกกับคนที่เย็นชาจนไม่ฟังใจ หรือบังคับให้ทิ้งตัวตนเพื่อเข้ากรอบ',
+    matches: ['ENFJ', 'ENTJ'],
+    finalLine: 'เธอดูเหมือนลอยๆ แต่จริงๆ เธอรู้สึกทุกอย่างลึกมาก แค่ไม่ได้พูดให้ทุกคนฟัง',
+  },
+  ENFJ: {
+    vibe: 'อบอุ่น อ่านบรรยากาศเก่ง และมีพรสวรรค์ในการทำให้คนอื่นรู้สึกมีคุณค่า',
+    friction: 'มักเหนื่อยกับคนที่ปิดใจ ไม่สื่อสาร หรือรับพลังดูแลไปโดยไม่เห็นคุณค่า',
+    matches: ['INFP', 'INTP'],
+    finalLine: 'เธอเก่งในการดูแลคนอื่นมาก จนบางทีลืมถามตัวเองว่าเหนื่อยอยู่หรือเปล่า',
+  },
+  ENFP: {
+    vibe: 'สดใส ช่างเชื่อมโยง รักความเป็นไปได้ และมักพาคนรอบตัวเห็นโลกมุมใหม่',
+    friction: 'ไม่ถูกกับคนที่ควบคุมมากเกินไป หรือทำให้ทุกไอเดียกลายเป็นข้อจำกัดทันที',
+    matches: ['INTJ', 'INFJ'],
+    finalLine: 'คนชอบคิดว่าเธอเล่นๆ แต่จริงๆ เธอรู้สึกลึกกว่าที่พูดออกมาเยอะมาก',
+  },
+  ISTJ: {
+    vibe: 'มั่นคง รับผิดชอบสูง เชื่อถือได้ และใส่ใจรายละเอียดที่ทำให้งานออกมาดีจริง',
+    friction: 'อาจไม่ถูกกับคนที่รับปากง่ายแต่ไม่ทำ หรือเปลี่ยนแผนโดยไม่มีเหตุผล',
+    matches: ['ESFP', 'ESTP'],
+    finalLine: 'เธออาจไม่ใช่คนพูดหวาน แต่ถ้าเธอเลือกอยู่ข้างใคร เธอจริงจังกว่าที่เขาคิดมาก',
+  },
+  ISFJ: {
+    vibe: 'ใส่ใจ อ่อนโยน จำรายละเอียดของคนสำคัญได้ดี และดูแลความสัมพันธ์อย่างสม่ำเสมอ',
+    friction: 'เหนื่อยกับคนที่พูดแรงเกินจำเป็น เห็นแก่ตัว หรือไม่เคารพความตั้งใจเล็กๆ',
+    matches: ['ESFP', 'ESTP'],
+    finalLine: 'เธอจำรายละเอียดเล็กๆ ของคนอื่นได้หมด แต่บางทีกลับไม่มีใครสังเกตว่าเธอก็อยากถูกดูแลเหมือนกัน',
+  },
+  ESTJ: {
+    vibe: 'จัดการเก่ง ตรงไปตรงมา รักความชัดเจน และเปลี่ยนแผนให้เป็นผลลัพธ์ได้จริง',
+    friction: 'มักชนกับคนที่ไม่ตรงเวลา ไม่รับผิดชอบ หรือปล่อยให้เรื่องง่ายกลายเป็นเรื่องวุ่น',
+    matches: ['ISFP', 'ISTP'],
+    finalLine: 'เธอไม่ได้ชอบควบคุมทุกอย่าง เธอแค่เห็นก่อนว่าถ้าไม่มีใครจัดการ มันจะพัง',
+  },
+  ESFJ: {
+    vibe: 'เป็นศูนย์กลางความอบอุ่นของกลุ่ม ใส่ใจผู้คน และทำให้ทุกคนรู้สึกเป็นส่วนหนึ่ง',
+    friction: 'ไม่ค่อยถูกกับคนที่ไม่รักษาน้ำใจ เมินความพยายาม หรือทำตัวห่างเหินเกินไป',
+    matches: ['ISFP', 'ISTP'],
+    finalLine: 'เธอทำให้ทุกคนรู้สึกว่าเขาสำคัญ แต่ลึกๆ เธอก็อยากมีคนทำแบบนั้นกับเธอบ้าง',
+  },
+  ISTP: {
+    vibe: 'ใจนิ่ง ลุยเป็นจังหวะ แก้ปัญหาด้วยมือจริง และชอบอิสระในการเลือกวิธีของตัวเอง',
+    friction: 'อาจอึดอัดกับคนที่ถามความรู้สึกถี่เกินไป หรือจัดตารางชีวิตให้แน่นเกินจำเป็น',
+    matches: ['ESFJ', 'ESTJ'],
+    finalLine: 'เธอไม่ค่อยอธิบายตัวเองเยอะ เพราะเธอเชื่อว่าการกระทำมันชัดกว่าคำพูดอยู่แล้ว',
+  },
+  ISFP: {
+    vibe: 'มีรสนิยม อ่อนโยน รักอิสระ และแสดงตัวตนผ่านการกระทำมากกว่าคำพูดเยอะๆ',
+    friction: 'ไม่ถูกกับคนที่วิจารณ์แรง ควบคุมทุกอย่าง หรือไม่ให้พื้นที่กับความรู้สึกส่วนตัว',
+    matches: ['ENFJ', 'ESFJ'],
+    finalLine: 'เธอดูเงียบ แต่จริงๆ ข้างในมีโลกสวยมาก แค่ไม่ใช่ทุกคนจะได้เข้าไปเห็น',
+  },
+  ESTP: {
+    vibe: 'อ่านสถานการณ์ไว กล้าลอง กล้าตัดสินใจ และมีพลังกับสิ่งที่เกิดขึ้นตรงหน้า',
+    friction: 'ไม่ค่อยถูกกับคนที่คิดวนมากเกินไป หรือทำให้ทุกอย่างช้าด้วยความกังวล',
+    matches: ['ISFJ', 'ISTJ'],
+    finalLine: 'เธอไม่ได้ไม่คิด เธอแค่คิดเร็วแล้วลงมือก่อนที่โอกาสจะหนีไป',
+  },
+  ESFP: {
+    vibe: 'มีชีวิตชีวา อยู่กับปัจจุบันเก่ง และเติมสีสันให้พื้นที่รอบตัวแบบเป็นธรรมชาติ',
+    friction: 'มักเหนื่อยกับคนที่จริงจังตลอดเวลา วิจารณ์บ่อย หรือไม่ยอมสนุกกับจังหวะตรงหน้า',
+    matches: ['ISFJ', 'ISTJ'],
+    finalLine: 'เธอดูสดใสเหมือนไม่คิดมาก แต่จริงๆ เธอแค่เลือกไม่ให้ความเศร้าขโมยแสงของตัวเองไป',
+  },
 };
+
 
 const exportVariants = [
   { id: 'aura', label: 'Aura Story', desc: 'สีสด มีแสงและกริด เหมาะแชร์ลง IG Story' },
@@ -269,8 +351,121 @@ function getStoredTheme() {
 }
 
 function calculateType(scores) {
-  return axisPairs.map(([left, right]) => (scores[left] >= scores[right] ? left : right)).join('');
+  // ถ้าคะแนนเท่ากัน จะไม่ล็อกให้ฝั่งซ้ายชนะเสมอ เพื่อลด bias ของผลลัพธ์
+  return axisPairs.map(([left, right]) => (scores[left] > scores[right] ? left : right)).join('');
 }
+
+function getAxisBreakdown(scores) {
+  return axisPairs.map(([left, right]) => {
+    const total = scores[left] + scores[right];
+    const leftPercent = total === 0 ? 50 : Math.round((scores[left] / total) * 100);
+    const rightPercent = 100 - leftPercent;
+    const winner = leftPercent >= rightPercent ? left : right;
+
+    return { left, right, leftPercent, rightPercent, winner };
+  });
+}
+
+function getTypePercentages(axisBreakdown) {
+  return axisBreakdown.map((axis) => ({
+    letter: axis.winner,
+    percent: axis.winner === axis.left ? axis.leftPercent : axis.rightPercent,
+    pair: `${axis.left}-${axis.right}`,
+  }));
+}
+
+function waitForImages(element) {
+  const images = Array.from(element.querySelectorAll('img'));
+
+  return Promise.all(
+    images.map((img) => {
+      if (img.complete) return Promise.resolve();
+      return new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+    }),
+  );
+}
+
+const screenMotion = {
+  initial: { opacity: 0, y: 22, scale: 0.985 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -18, scale: 0.985 },
+  transition: { duration: 0.35, ease: 'easeOut' },
+};
+
+const insightMilestones = [7, 15, 23];
+
+const axisStoryCopy = {
+  E: {
+    whisper: 'โหย เธอนี่เป็นคนที่พอได้เจอคนถูกจังหวะแล้วพลังพุ่งมาก',
+    detail: 'เธอไม่ได้แค่ชอบคุยนะ แต่การได้แลกเปลี่ยนกับคนอื่นทำให้ไอเดียในหัววิ่งเร็วขึ้นแบบเห็นได้ชัด',
+  },
+  I: {
+    whisper: 'โอเค เริ่มจับได้ละ... เธอดูนิ่ง แต่สมองไม่เคยเงียบเลยใช่ปะ',
+    detail: 'ต่อให้ภายนอกดูชิล ในหัวเธอมักกำลัง replay ทุกบทสนทนา คิดซ้ำ คิดลึก แล้วค่อยเลือกตอบแบบแม่นๆ',
+  },
+  S: {
+    whisper: 'เธอไม่ใช่คนคิดน้อยนะ เธอแค่ต้องเห็นของจริงก่อนถึงจะเชื่อ',
+    detail: 'รายละเอียด หลักฐาน และสิ่งที่จับต้องได้คือสิ่งที่ทำให้เธอรู้สึกว่า “โอเค อันนี้ไว้ใจได้จริง”',
+  },
+  N: {
+    whisper: 'เธอนี่สายคิดไกลเกินเหตุแบบสุดๆ เรื่องเดียวแตกไปสิบ timeline',
+    detail: 'สมองเธอชอบเชื่อมทุกอย่างเป็น pattern โดยอัตโนมัติ จนบางทีคนอื่นยังอยู่ข้อแรก แต่เธอไปถึงอนาคตแล้ว',
+  },
+  T: {
+    whisper: 'เธอดูใจแข็งในบางจังหวะ แต่จริงๆ แค่อยากให้ทุกอย่างแฟร์และมีเหตุผล',
+    detail: 'เวลาเจอเรื่องยาก เธอจะพยายามตัดเสียงรบกวนออก แล้วมองว่าอะไรคือทางออกที่ชัดและสมเหตุสมผลที่สุด',
+  },
+  F: {
+    whisper: 'เธอเก่งมากในการแกล้งทำว่าโอเค ทั้งที่จริงๆ รับทุกอย่างเข้ามาหมดเลย',
+    detail: 'เธอไม่ได้ตัดสินใจจากอารมณ์ล้วนๆ แต่เธอมองเห็นผลกระทบทางใจของคนอื่นไวมากจนละเลยไม่ได้',
+  },
+  J: {
+    whisper: 'เธอเป็นคนที่ถ้าแผนไม่ชัด ใจจะเริ่มไม่สงบแบบเงียบๆ',
+    detail: 'การมีเป้าหมาย ขอบเขต และลำดับที่แน่นอนทำให้เธอรู้สึกว่าโลกไม่ได้วุ่นวายเกินควบคุม',
+  },
+  P: {
+    whisper: 'เธอไม่ใช่คนไร้แผน เธอแค่ไม่อยากให้ชีวิตถูกล็อกจนหายใจไม่ออก',
+    detail: 'พอมีพื้นที่ให้เปลี่ยนทาง เธอจะปรับตัวไว เห็นโอกาสใหม่ และเอาตัวรอดจากสถานการณ์สดได้ดีมาก',
+  },
+};
+
+
+function getLiveInsight(scores, answeredCount) {
+  const breakdown = getAxisBreakdown(scores);
+  const sorted = breakdown
+    .map((axis) => {
+      const winnerPercent = axis.winner === axis.left ? axis.leftPercent : axis.rightPercent;
+      return { ...axis, winnerPercent };
+    })
+    .sort((a, b) => b.winnerPercent - a.winnerPercent);
+
+  const strongest = sorted[0];
+  const second = sorted[1] || sorted[0];
+  const primary = axisStoryCopy[strongest.winner];
+  const secondary = axisStoryCopy[second.winner];
+  const certainty = Math.max(0, strongest.winnerPercent - 50);
+
+  const stageTitle = answeredCount < 10 ? 'เริ่มอ่านออกแล้วนะ' : answeredCount < 20 ? 'โอเค ภาพเริ่มชัดมาก' : 'ใกล้เฉลยตัวจริงแล้ว';
+  const stageLead = certainty >= 25
+    ? 'คำตอบเริ่มไปทางเดียวกันชัดมาก เหมือนลายเซ็นนิสัยเริ่มโผล่ออกมาแล้ว'
+    : 'คำตอบยังมีความผสมอยู่ น่าสนใจมาก เพราะเธอไม่ได้เป็นคนด้านเดียวเลย';
+
+  return {
+    stageTitle,
+    stageLead,
+    strongestLetter: strongest.winner,
+    strongestPercent: strongest.winnerPercent,
+    pair: `${strongest.left}-${strongest.right}`,
+    whisper: primary.whisper,
+    detail: primary.detail,
+    combo: `${strongest.winner}${second.winner}`,
+    comboText: `${primary.whisper} แล้วอีกมุมหนึ่งก็ ${secondary.detail}`,
+  };
+}
+
 
 function getCharacterImagePath(type) {
   return `/characters/${type}.png`;
@@ -288,6 +483,77 @@ function getMatchProfiles(type) {
     image: getCharacterImagePath(matchType),
   }));
 }
+
+
+const storyVariantStyles = {
+  aura: {
+    badge: 'Aura Story',
+    cardStyle: {
+      background: 'radial-gradient(circle at 20% 10%, rgba(255,255,255,0.45), transparent 28%), linear-gradient(135deg, #7c3aed 0%, #2563eb 48%, #06b6d4 100%)',
+      color: '#ffffff',
+    },
+    frameStyle: {},
+    characterStyle: {},
+    copyStyle: {},
+    showMatches: true,
+    showTags: true,
+    showMatchStrip: true,
+  },
+  clean: {
+    badge: 'Clean Poster',
+    cardStyle: {
+      background: 'linear-gradient(180deg, #ffffff 0%, #f7f8ff 100%)',
+      color: '#111827',
+    },
+    frameStyle: {
+      border: '2px solid rgba(17, 24, 39, 0.1)',
+      boxShadow: '0 30px 90px rgba(17, 24, 39, 0.14)',
+    },
+    characterStyle: {
+      background: 'rgba(17, 24, 39, 0.04)',
+      boxShadow: 'none',
+    },
+    copyStyle: {
+      background: 'rgba(255, 255, 255, 0.72)',
+      color: '#111827',
+    },
+    showMatches: false,
+    showTags: true,
+    showMatchStrip: false,
+  },
+  character: {
+    badge: 'Character Focus',
+    cardStyle: {
+      background: 'radial-gradient(circle at 50% 28%, rgba(255,255,255,0.72), transparent 30%), linear-gradient(160deg, #0f172a 0%, #312e81 52%, #db2777 100%)',
+      color: '#ffffff',
+    },
+    frameStyle: {},
+    characterStyle: {
+      transform: 'scale(1.12)',
+      transformOrigin: 'center',
+      marginBlock: '52px 30px',
+    },
+    copyStyle: {
+      textAlign: 'center',
+    },
+    showMatches: false,
+    showTags: false,
+    showMatchStrip: false,
+  },
+  match: {
+    badge: 'Match Duo',
+    cardStyle: {
+      background: 'linear-gradient(135deg, #fb7185 0%, #f59e0b 42%, #22c55e 100%)',
+      color: '#ffffff',
+    },
+    frameStyle: {},
+    characterStyle: {},
+    copyStyle: {},
+    showMatches: true,
+    showTags: false,
+    showMatchStrip: true,
+  },
+};
 
 function getStoryPreviewScale() {
   if (typeof window === 'undefined') return 0.32;
@@ -310,6 +576,7 @@ export default function App() {
   const [screen, setScreen] = useState('start');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [scores, setScores] = useState(initialScores);
+  const [answerHistory, setAnswerHistory] = useState([]);
   const [isDownloading, setIsDownloading] = useState(false);
   const [storyScale, setStoryScale] = useState(getStoryPreviewScale);
   const [selectedExportVariant, setSelectedExportVariant] = useState('aura');
@@ -322,12 +589,10 @@ export default function App() {
   const matchProfiles = getMatchProfiles(resultType);
   const characterImagePath = getCharacterImagePath(resultType);
   const selectedExportFormatConfig = exportFormats.find((format) => format.id === selectedExportFormat) || exportFormats[0];
-  const axisBreakdown = axisPairs.map(([left, right]) => {
-    const total = scores[left] + scores[right];
-    const leftPercent = total === 0 ? 50 : Math.round((scores[left] / total) * 100);
-
-    return { left, right, leftPercent, rightPercent: 100 - leftPercent };
-  });
+  const storyVariant = storyVariantStyles[selectedExportVariant] || storyVariantStyles.aura;
+  const axisBreakdown = useMemo(() => getAxisBreakdown(scores), [scores]);
+  const typePercentages = useMemo(() => getTypePercentages(axisBreakdown), [axisBreakdown]);
+  const liveInsight = useMemo(() => getLiveInsight(scores, answerHistory.length), [scores, answerHistory.length]);
   const progressPercent = (Math.min(currentQuestion + 1, questions.length) / questions.length) * 100;
   const storyPreviewStyle = {
     width: `${1080 * storyScale}px`,
@@ -354,26 +619,60 @@ export default function App() {
     setScreen('quiz');
     setCurrentQuestion(0);
     setScores(initialScores);
+    setAnswerHistory([]);
   }
 
   function answerQuestion(option) {
-    setScores((previousScores) => ({
-      ...previousScores,
-      [option.type]: previousScores[option.type] + option.weight,
-    }));
+    setAnswerHistory((previousHistory) => [
+      ...previousHistory,
+      { questionIndex: currentQuestion, scores: { ...scores } },
+    ]);
+
+    const nextScores = {
+      ...scores,
+      [option.type]: scores[option.type] + option.weight,
+    };
+
+    setScores(nextScores);
+
+    const answeredCount = currentQuestion + 1;
+    const nextQuestionIndex = Math.min(currentQuestion + 1, questions.length - 1);
 
     if (currentQuestion >= questions.length - 1) {
       setScreen('result');
       return;
     }
 
-    setCurrentQuestion((questionIndex) => Math.min(questionIndex + 1, questions.length - 1));
+    setCurrentQuestion(nextQuestionIndex);
+
+    if (insightMilestones.includes(answeredCount)) {
+      setScreen('insight');
+      return;
+    }
+
+    setScreen('quiz');
+  }
+
+  function goBackQuestion() {
+    const previousStep = answerHistory[answerHistory.length - 1];
+
+    if (!previousStep) return;
+
+    setScreen('quiz');
+    setCurrentQuestion(previousStep.questionIndex);
+    setScores(previousStep.scores);
+    setAnswerHistory((previousHistory) => previousHistory.slice(0, -1));
+  }
+
+  function continueQuizFromInsight() {
+    setScreen('quiz');
   }
 
   function restartQuiz() {
     setScreen('start');
     setCurrentQuestion(0);
     setScores(initialScores);
+    setAnswerHistory([]);
   }
 
   async function downloadStoryCard() {
@@ -398,14 +697,15 @@ export default function App() {
       clone.style.width = '1080px';
       clone.style.height = '1920px';
       clone.style.setProperty('--story-scale', '1');
-      // ใส่ชั้นพื้นหลังสำรองสำหรับ export เพื่อกันเคสบราวเซอร์ไม่รองรับเอฟเฟกต์บางอย่าง
-      const exportBg = document.createElement('div');
-      exportBg.className = 'export-bg';
-      clone.insertBefore(exportBg, clone.firstChild);
+      clone.style.transform = 'none';
+      clone.style.zoom = '1';
+      clone.style.overflow = 'hidden';
       document.body.appendChild(clone);
 
-      // รอให้ browser วาด DOM clone ก่อนแคปเจอร์
-      await new Promise((r) => requestAnimationFrame(r));
+      // รอ font, รูปภาพ และ layout ให้พร้อมก่อนแคปเจอร์ เพื่อให้ไฟล์ download เหมือน preview มากที่สุด
+      await document.fonts?.ready;
+      await waitForImages(clone);
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
       const canvas = await html2canvas(clone, {
         width: 1080,
@@ -414,6 +714,13 @@ export default function App() {
         useCORS: true,
         backgroundColor: selectedExportFormatConfig.backgroundColor,
         logging: false,
+        onclone: (clonedDocument) => {
+          const exportCard = clonedDocument.getElementById('story-card-export');
+          if (exportCard) {
+            exportCard.style.transform = 'none';
+            exportCard.style.animation = 'none';
+          }
+        },
       });
 
       const link = document.createElement('a');
@@ -429,27 +736,49 @@ export default function App() {
 
   return (
     <main className="app-shell">
+      <div className="vibe-background" aria-hidden="true">
+        <span className="vibe-blob vibe-blob-one" />
+        <span className="vibe-blob vibe-blob-two" />
+        <span className="vibe-blob vibe-blob-three" />
+        <span className="vibe-stars" />
+      </div>
       <button className="theme-toggle" type="button" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} aria-label="Toggle color mode">
         <FontAwesomeIcon icon={theme === 'light' ? faMoon : faSun} aria-hidden="true" />
       </button>
 
-      {screen === 'start' && (
-        <section className="screen start-screen glass-panel fade-in">
+      <AnimatePresence mode="wait">
+        {screen === 'start' && (
+          <motion.section key="start" className="screen start-screen glass-panel fade-in" {...screenMotion}>
           <div className="brand-mark" aria-hidden="true">
             <FontAwesomeIcon icon={faWandMagicSparkles} />
           </div>
           <p className="eyebrow">MBTI 16 Types Quiz</p>
-          <h1>Discover Your Vibe</h1>
-          <p className="lead">ตอบ 30 คำถามสั้นๆ เพื่อค้นหาบุคลิกภาพในแบบของคุณ พร้อมการ์ด IG Story สำหรับแชร์ผลลัพธ์</p>
+          <h1>
+            Discover The Personality
+            <span>Your Aura Hides</span>
+          </h1>
+          <p className="lead">
+            แบบทดสอบ MBTI ที่ไม่ได้แค่บอก type แต่จะค่อยๆ อ่าน vibe วิธีคิด และพลังที่คนอื่นสัมผัสได้จากตัวเธอ
+          </p>
+          <div className="start-mini-story" aria-label="Quiz story preview">
+            <span>ตอบไปเรื่อยๆ แล้วเว็บจะค่อยๆ อ่าน vibe ของเธอ</span>
+            <strong>“โหย เธอเป็นคนแบบนี้นี่เอง”</strong>
+          </div>
+          <div className="mbti-fact-card">
+            <strong>MBTI คืออะไร?</strong>
+            <p>
+              MBTI แบ่งบุคลิกออกเป็น 16 แบบจาก 4 แกนหลัก: การรับพลัง, วิธีรับข้อมูล, การตัดสินใจ และวิธีจัดการชีวิต
+            </p>
+          </div>
           <button className="primary-button start-button" type="button" onClick={startQuiz}>
             <FontAwesomeIcon icon={faPlay} aria-hidden="true" />
             เริ่มทำแบบทดสอบ
           </button>
-        </section>
-      )}
+          </motion.section>
+        )}
 
-      {screen === 'quiz' && (
-        <section className="screen quiz-screen glass-panel fade-in">
+        {screen === 'quiz' && (
+          <motion.section key="quiz" className="screen quiz-screen glass-panel fade-in" {...screenMotion}>
           <div className="quiz-topline">
             <span>ข้อ {currentQuestion + 1}/{questions.length}</span>
             <span>{activeQuestion.axis}</span>
@@ -457,6 +786,11 @@ export default function App() {
           <div className="progress-track" aria-hidden="true">
             <div className="progress-fill" style={{ width: `${progressPercent}%` }} />
           </div>
+
+          <button className="secondary-button back-question-button" type="button" onClick={goBackQuestion} disabled={answerHistory.length === 0}>
+            <FontAwesomeIcon icon={faChevronLeft} aria-hidden="true" />
+            ย้อนกลับข้อก่อน
+          </button>
 
           <div className="quiz-grid">
             <article className="question-copy">
@@ -466,53 +800,114 @@ export default function App() {
 
             <div className="answer-stack">
               {activeQuestion.options.map((option) => (
-                <button className="answer-button" type="button" key={option.text} onClick={() => answerQuestion(option)}>
+                <motion.button
+                  className="answer-button"
+                  type="button"
+                  key={option.text}
+                  onClick={() => answerQuestion(option)}
+                  whileHover={{ x: 6, scale: 1.015 }}
+                  whileTap={{ scale: 0.98 }}
+                >
                   <span>{option.text}</span>
                   <FontAwesomeIcon icon={faChevronRight} aria-hidden="true" />
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
-        </section>
-      )}
+          </motion.section>
+        )}
 
-      {screen === 'result' && (
-        <section className="screen result-screen fade-in">
+        {screen === 'insight' && (
+          <motion.section key="insight" className="screen insight-screen glass-panel fade-in" {...screenMotion}>
+            <motion.div
+              className="insight-orb"
+              aria-hidden="true"
+              animate={{ rotate: 360, scale: [1, 1.05, 1] }}
+              transition={{ rotate: { duration: 18, repeat: Infinity, ease: 'linear' }, scale: { duration: 3, repeat: Infinity } }}
+            />
+            <div className="insight-character-shadow" aria-hidden="true">
+              <img src={characterImagePath} onError={usePlaceholderImage} alt="" />
+            </div>
+            <p className="eyebrow">Vibe Check · {answerHistory.length}/{questions.length}</p>
+            <h2>{liveInsight.stageTitle}</h2>
+            <p className="insight-lead">{liveInsight.stageLead}</p>
+            <div className="insight-dialogue">
+              <span>ระบบแอบกระซิบว่า...</span>
+              <strong>{liveInsight.whisper}</strong>
+              <p>{liveInsight.detail}</p>
+            </div>
+            <div className="insight-stat-row">
+              <div>
+                <span>แกนที่ชัดสุดตอนนี้</span>
+                <strong>{liveInsight.pair}</strong>
+              </div>
+              <div>
+                <span>พลังที่นำอยู่</span>
+                <strong>{liveInsight.strongestLetter} {liveInsight.strongestPercent}%</strong>
+              </div>
+              <div>
+                <span>กลิ่น vibe ตอนนี้</span>
+                <strong>{liveInsight.combo}</strong>
+              </div>
+            </div>
+            <button className="primary-button insight-next-button" type="button" onClick={continueQuizFromInsight}>
+              ไปต่อ ดูว่าจะใช่จริงไหม
+              <FontAwesomeIcon icon={faChevronRight} aria-hidden="true" />
+            </button>
+          </motion.section>
+        )}
+
+        {screen === 'result' && (
+          <motion.section key="result" className="screen result-screen fade-in" {...screenMotion}>
           <div className="story-preview" style={storyPreviewStyle} aria-label="IG Story result preview">
-            <div id="story-card" className={`story-card-${selectedExportVariant}`}>
+            <div id="story-card" className={`story-card-${selectedExportVariant}`} style={storyVariant.cardStyle}>
               <div className="story-pattern" aria-hidden="true" />
-              <div className="story-frame">
+              <div className="story-frame" style={storyVariant.frameStyle}>
                 <div className="story-label-row">
                   <span>Discover Your Vibe</span>
-                  <span>MBTI Result</span>
+                  <span>{storyVariant.badge}</span>
                 </div>
-                <div className="story-character-card">
+                <div className="story-character-card" style={storyVariant.characterStyle}>
                   <img src={characterImagePath} onError={usePlaceholderImage} alt={`${resultType} character`} />
                 </div>
-                <div className="story-match-portraits" aria-label="MBTI match characters">
-                  {matchProfiles.map((match) => (
-                    <div key={match.type}>
-                      <img src={match.image} onError={usePlaceholderImage} alt={`${match.type} character`} />
-                      <span>{match.type}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="story-copy-block">
+                {storyVariant.showMatches && (
+                  <div className="story-match-portraits" aria-label="MBTI match characters">
+                    {matchProfiles.map((match) => (
+                      <div key={match.type}>
+                        <img src={match.image} onError={usePlaceholderImage} alt={`${match.type} character`} />
+                        <span>{match.type}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="story-copy-block" style={storyVariant.copyStyle}>
                   <div className="story-type">{resultType}</div>
                   <h2>{profile.title}</h2>
                   <p className="story-desc">{profile.desc}</p>
                   <p className="story-mood">{profile.mood}</p>
                 </div>
-                <div className="story-match-strip">
-                  <span>Best Match</span>
-                  <strong>{matchProfiles.map((match) => match.type).join(' / ')}</strong>
-                </div>
-                <div className="story-tags">
-                  {profile.tags.map((tag) => (
-                    <span key={tag}>{tag}</span>
+                <div className="story-percent-grid" aria-label="MBTI percentage summary">
+                  {typePercentages.map((item) => (
+                    <div key={item.pair}>
+                      <span>{item.letter}</span>
+                      <strong>{item.percent}%</strong>
+                    </div>
                   ))}
                 </div>
-                <p className="story-watermark">@ Discover Your Vibe</p>
+                {storyVariant.showMatchStrip && (
+                  <div className="story-match-strip">
+                    <span>Best Match</span>
+                    <strong>{matchProfiles.map((match) => match.type).join(' / ')}</strong>
+                  </div>
+                )}
+                {storyVariant.showTags && (
+                  <div className="story-tags">
+                    {profile.tags.map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+                )}
+                <p className="story-watermark">@ MBTITOPIA</p>
               </div>
             </div>
           </div>
@@ -521,6 +916,15 @@ export default function App() {
             <p className="eyebrow">ผลลัพธ์ของคุณ</p>
             <h2>ยินดีด้วย คุณคือ {resultType}</h2>
             <p>บันทึกการ์ดนี้ไว้แชร์ลง IG Story หรือเล่นใหม่เพื่อดูว่าคำตอบในอารมณ์อื่นจะพาไปเจอบุคลิกไหน</p>
+
+            <div className="type-percent-card">
+              {typePercentages.map((item) => (
+                <div key={item.pair}>
+                  <span>{item.pair}</span>
+                  <strong>{item.letter} {item.percent}%</strong>
+                </div>
+              ))}
+            </div>
 
             <div className="personality-story">
               <div className="story-info-card">
@@ -534,6 +938,11 @@ export default function App() {
             </div>
 
             
+
+            <div className="final-story-card">
+              <span>ระบบสรุป vibe สุดท้ายว่า...</span>
+              <h3>{story.finalLine}</h3>
+            </div>
 
             <div className="axis-card">
               <div className="axis-card-title">
@@ -615,15 +1024,16 @@ export default function App() {
 
             <div className="donate-box">
               <div>
-                <h3>สนับสนุนค่ากาแฟให้ผู้สร้างสรรค์</h3>
-                <p>ขอบคุณที่ช่วยเติมพลังให้โปรเจกต์เล็กๆ นี้เติบโตต่อไป</p>
+                <h3>ถ้าเว็บนี้อ่านใจเธอแตกเกินไป ☕</h3>
+                <p>ทุกการสนับสนุนจะช่วยเพิ่ม character ใหม่ effect ใหม่ และ story mode ที่ลึกขึ้นอีก</p>
               </div>
               {/* เปลี่ยน src ด้านล่างเป็นรูป QR Code PromptPay ของคุณ */}
               <img src="https://placehold.co/360x360/png?text=PromptPay+QR" alt="PromptPay QR placeholder" />
             </div>
           </aside>
-        </section>
-      )}
+          </motion.section>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
