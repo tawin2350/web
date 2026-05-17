@@ -249,6 +249,18 @@ const mbtiStories = {
   ESFP: { vibe: 'มีชีวิตชีวา อยู่กับปัจจุบันเก่ง และเติมสีสันให้พื้นที่รอบตัวแบบเป็นธรรมชาติ', friction: 'มักเหนื่อยกับคนที่จริงจังตลอดเวลา วิจารณ์บ่อย หรือไม่ยอมสนุกกับจังหวะตรงหน้า', matches: ['ISFJ', 'ISTJ'] },
 };
 
+const exportVariants = [
+  { id: 'aura', label: 'Aura Story', desc: 'สีสด มีแสงและกริด เหมาะแชร์ลง IG Story' },
+  { id: 'clean', label: 'Clean Poster', desc: 'เรียบ สว่าง อ่านง่าย เหมาะส่งให้เพื่อน' },
+  { id: 'character', label: 'Character Focus', desc: 'โชว์ตัวละครเด่นที่สุด เหมาะสายภาพ' },
+  { id: 'match', label: 'Match Duo', desc: 'เน้นคู่ MBTI ที่เข้ากัน พร้อมรูปคู่' },
+];
+
+const exportFormats = [
+  { id: 'png', label: 'PNG', mime: 'image/png', extension: 'png', quality: 1, backgroundColor: null },
+  { id: 'jpg', label: 'JPG', mime: 'image/jpeg', extension: 'jpg', quality: 0.96, backgroundColor: '#1746a2' },
+];
+
 const initialScores = scoreLetters.reduce((scores, letter) => ({ ...scores, [letter]: 0 }), {});
 
 function getStoredTheme() {
@@ -300,6 +312,8 @@ export default function App() {
   const [scores, setScores] = useState(initialScores);
   const [isDownloading, setIsDownloading] = useState(false);
   const [storyScale, setStoryScale] = useState(getStoryPreviewScale);
+  const [selectedExportVariant, setSelectedExportVariant] = useState('aura');
+  const [selectedExportFormat, setSelectedExportFormat] = useState('png');
 
   const activeQuestion = questions[Math.min(currentQuestion, questions.length - 1)];
   const resultType = useMemo(() => calculateType(scores), [scores]);
@@ -307,6 +321,7 @@ export default function App() {
   const story = mbtiStories[resultType];
   const matchProfiles = getMatchProfiles(resultType);
   const characterImagePath = getCharacterImagePath(resultType);
+  const selectedExportFormatConfig = exportFormats.find((format) => format.id === selectedExportFormat) || exportFormats[0];
   const axisBreakdown = axisPairs.map(([left, right]) => {
     const total = scores[left] + scores[right];
     const leftPercent = total === 0 ? 50 : Math.round((scores[left] / total) * 100);
@@ -363,6 +378,7 @@ export default function App() {
 
   async function downloadStoryCard() {
     const storyCard = document.getElementById('story-card');
+    let clone;
 
     if (!storyCard) {
       alert('ไม่พบการ์ดผลลัพธ์ กรุณาลองอีกครั้ง');
@@ -372,20 +388,41 @@ export default function App() {
     setIsDownloading(true);
 
     try {
-      const canvas = await html2canvas(storyCard, {
+      // สร้างสำเนาแบบไม่ย่อ (scale=1) นอกจอเพื่อให้ได้รูป 1080x1920 เต็มสัดส่วน
+      clone = storyCard.cloneNode(true);
+      clone.id = 'story-card-export';
+      clone.classList.add('story-card-export');
+      clone.style.position = 'fixed';
+      clone.style.left = '-100000px';
+      clone.style.top = '0';
+      clone.style.width = '1080px';
+      clone.style.height = '1920px';
+      clone.style.setProperty('--story-scale', '1');
+      // ใส่ชั้นพื้นหลังสำรองสำหรับ export เพื่อกันเคสบราวเซอร์ไม่รองรับเอฟเฟกต์บางอย่าง
+      const exportBg = document.createElement('div');
+      exportBg.className = 'export-bg';
+      clone.insertBefore(exportBg, clone.firstChild);
+      document.body.appendChild(clone);
+
+      // รอให้ browser วาด DOM clone ก่อนแคปเจอร์
+      await new Promise((r) => requestAnimationFrame(r));
+
+      const canvas = await html2canvas(clone, {
         width: 1080,
         height: 1920,
         scale: 1,
         useCORS: true,
-        backgroundColor: null,
+        backgroundColor: selectedExportFormatConfig.backgroundColor,
         logging: false,
       });
 
       const link = document.createElement('a');
-      link.download = `discover-your-vibe-${resultType}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.download = `discover-your-vibe-${resultType}-${selectedExportVariant}.${selectedExportFormatConfig.extension}`;
+      link.href = canvas.toDataURL(selectedExportFormatConfig.mime, selectedExportFormatConfig.quality);
       link.click();
     } finally {
+      // ลบ clone ออกหลังจากสร้างรูปแล้ว แม้ export จะล้มเหลวระหว่างทาง
+      clone?.remove();
       setIsDownloading(false);
     }
   }
@@ -442,7 +479,7 @@ export default function App() {
       {screen === 'result' && (
         <section className="screen result-screen fade-in">
           <div className="story-preview" style={storyPreviewStyle} aria-label="IG Story result preview">
-            <div id="story-card">
+            <div id="story-card" className={`story-card-${selectedExportVariant}`}>
               <div className="story-pattern" aria-hidden="true" />
               <div className="story-frame">
                 <div className="story-label-row">
@@ -451,6 +488,14 @@ export default function App() {
                 </div>
                 <div className="story-character-card">
                   <img src={characterImagePath} onError={usePlaceholderImage} alt={`${resultType} character`} />
+                </div>
+                <div className="story-match-portraits" aria-label="MBTI match characters">
+                  {matchProfiles.map((match) => (
+                    <div key={match.type}>
+                      <img src={match.image} onError={usePlaceholderImage} alt={`${match.type} character`} />
+                      <span>{match.type}</span>
+                    </div>
+                  ))}
                 </div>
                 <div className="story-copy-block">
                   <div className="story-type">{resultType}</div>
@@ -521,6 +566,38 @@ export default function App() {
                       <p>{match.mood}</p>
                     </div>
                   </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="export-panel">
+              <div className="export-panel-head">
+                <span>เลือกรูปแบบดาวน์โหลด</span>
+                <strong>{selectedExportFormatConfig.label} 1080 x 1920</strong>
+              </div>
+              <div className="export-style-grid">
+                {exportVariants.map((variant) => (
+                  <button
+                    className={selectedExportVariant === variant.id ? 'export-choice active' : 'export-choice'}
+                    type="button"
+                    key={variant.id}
+                    onClick={() => setSelectedExportVariant(variant.id)}
+                  >
+                    <span>{variant.label}</span>
+                    <small>{variant.desc}</small>
+                  </button>
+                ))}
+              </div>
+              <div className="export-format-toggle" aria-label="Image file format">
+                {exportFormats.map((format) => (
+                  <button
+                    className={selectedExportFormat === format.id ? 'active' : ''}
+                    type="button"
+                    key={format.id}
+                    onClick={() => setSelectedExportFormat(format.id)}
+                  >
+                    {format.label}
+                  </button>
                 ))}
               </div>
             </div>
